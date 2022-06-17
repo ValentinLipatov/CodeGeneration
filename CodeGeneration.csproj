@@ -1,0 +1,57 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Core\BusinessObjects\BusinessObjects.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>BusinessObjects.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Core\DataTransferObjects\DataTransferObjects.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>DataTransferObjects.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Interfaces\Interfaces.cs">
+      <DependentUpon>Interfaces.tt</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="BusinessObjects.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Core\BusinessObjects\BusinessObjects.tt">
+      <LastGenOutput>BusinessObjects.cs</LastGenOutput>
+      <Generator>TextTemplatingFileGenerator</Generator>
+    </None>
+    <None Update="Core\DataTransferObjects\DataTransferObjects.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>DataTransferObjects.cs</LastGenOutput>
+    </None>
+    <None Update="Core\Interfaces\Interfaces.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Interfaces.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Custom\Fields\" />
+  </ItemGroup>
+
+	<Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v16.0\TextTemplating\Microsoft.TextTemplating.targets" />
+	<PropertyGroup>
+		<TransformOnBuild>true</TransformOnBuild>
+	</PropertyGroup>
+
+</Project>

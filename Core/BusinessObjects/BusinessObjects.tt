@@ -1,0 +1,190 @@
+﻿<#@ template debug="false" hostspecific="true" language="C#" #>
+<#@ output extension=".cs" #>
+<#@ assembly name="System.Xml" #>
+<#@ import namespace="System.Xml" #>
+using System;
+
+/// <summary>
+/// Auto-generated code
+/// </summary>
+namespace CodeGeneration.BusinessObjects
+{
+<#
+
+XmlDocument doc = new XmlDocument();
+doc.Load(this.Host.ResolvePath("..\\..\\BusinessObjects.xml"));
+
+var firstClass = true;
+foreach (XmlNode classNode in doc.SelectNodes("//Class"))
+{
+	if (firstClass)
+	{
+		firstClass = false;
+	}
+	else
+	{
+		#><#= Environment.NewLine #><#
+	}
+
+	var className = classNode.Attributes["Name"].Value.ToString();
+	var baseClassName = classNode.Attributes["BaseClassName"]?.Value?.ToString() ?? "BaseBusinessObject";
+	var classCaption = classNode.Attributes["Caption"]?.Value?.ToString();
+
+	if (!string.IsNullOrEmpty(classCaption))
+	{
+		#>	/// <summary><#= Environment.NewLine #><#
+		#>	/// <#= classCaption #><#= Environment.NewLine #><#
+		#>	/// </summary><#= Environment.NewLine #><#
+	}
+
+	#>	public partial class <#= className #> : <#= baseClassName #>, I<#= classNode.Attributes["Name"].Value #><#= Environment.NewLine #>	{<#= Environment.NewLine #><#
+
+	#>		public <#= className #>() : this (nameof(<#= className #>), <#= classCaption == null ? "null" : $"\"{classCaption}\"" #>)<#= Environment.NewLine #><#
+	#>		{<#= Environment.NewLine #><#= Environment.NewLine #><#
+	#>		}<#= Environment.NewLine #><#
+
+	#>		public <#= className #>(string name, string caption) : base (name, caption)<#= Environment.NewLine #><#
+	#>		{<#= Environment.NewLine #><#= Environment.NewLine #><#
+	#>		}<#= Environment.NewLine #><#
+
+	foreach (XmlNode propertyNode in classNode.SelectNodes("//Property"))
+	{
+		if (propertyNode.ParentNode == classNode && (propertyNode.Attributes["Implement"] == null || propertyNode.Attributes["Implement"]?.Value == "true"))
+		{
+			#><#= Environment.NewLine #><#
+
+			var type = propertyNode.Attributes["Type"].Value.ToString();
+			var propertyName = propertyNode.Attributes["Name"].Value.ToString();
+			var propertyCaption = propertyNode.Attributes["Caption"]?.Value?.ToString();
+			var fieldName = $"{propertyName}Field";
+			var fieldType = propertyNode.Attributes["FieldType"]?.Value?.ToString() ?? $"Field<{type}>";
+
+			if (!string.IsNullOrEmpty(propertyCaption))
+			{
+				#>		/// <summary><#= Environment.NewLine #><#
+				#>		/// <#= propertyCaption #><#= Environment.NewLine #><#
+				#>		/// </summary><#= Environment.NewLine #><#
+			}
+
+			#>		public <#= type #> <#= propertyName #><#= Environment.NewLine #><#
+			#>		{<#= Environment.NewLine #><#
+			#>			get => <#= fieldName #>.Value;<#= Environment.NewLine #><#
+			#>			set => <#= fieldName #>.Value = value;<#= Environment.NewLine #><#
+			#>		}<#= Environment.NewLine #><#
+
+			#>		protected <#= fieldType #> <#= fieldName #> { get; set; }<#= Environment.NewLine #><#
+
+		}
+	}
+	
+	#>		<#= Environment.NewLine #><#
+	#>		protected override void CreateGeneratedFields()<#= Environment.NewLine #><#
+	#>		{<#= Environment.NewLine #><#
+	#>			base.CreateGeneratedFields();<#= Environment.NewLine #><#
+	#>		<#= Environment.NewLine #><#
+
+	var firstProperty = true;
+	foreach (XmlNode propertyNode in classNode.SelectNodes("//Property"))
+	{
+		if (propertyNode.ParentNode == classNode && (propertyNode.Attributes["Implement"] == null || propertyNode.Attributes["Implement"]?.Value == "true"))
+		{
+			if (firstProperty)
+			{
+				firstProperty = false;
+			}
+			else
+			{
+				#><#= Environment.NewLine #><#
+			}
+
+			var type = propertyNode.Attributes["Type"]?.Value?.ToString();
+			var propertyName = propertyNode.Attributes["Name"]?.Value?.ToString();
+			var propertyCaption = propertyNode.Attributes["Caption"]?.Value?.ToString();
+			var propertyVisible = propertyNode.Attributes["Visible"]?.Value?.ToString();
+			var propertyEnabled = propertyNode.Attributes["Enabled"]?.Value?.ToString();
+			var propertyIsMandatory = propertyNode.Attributes["IsMandatory"]?.Value?.ToString();
+			var fieldName = $"{propertyName}Field";
+			var fieldType = propertyNode.Attributes["FieldType"]?.Value?.ToString() ?? $"Field<{type}>";
+			
+			if (!string.IsNullOrEmpty(fieldType))
+			{
+				#>			<#= fieldName #> = AddField(new <#= fieldType #>(this));<#= Environment.NewLine #><#
+			}
+
+			if (!string.IsNullOrEmpty(propertyName))
+			{
+				#>			<#= fieldName #>.Name = "<#= propertyName #>";<#= Environment.NewLine #><#
+			}
+
+			if (!string.IsNullOrEmpty(propertyCaption))
+			{
+				#>			<#= fieldName #>.Caption = <#= $"\"{propertyCaption}\"" #>;<#= Environment.NewLine #><#
+			}
+
+			if (!string.IsNullOrEmpty(propertyVisible))
+			{
+				#>			<#= fieldName #>.Visible = <#= propertyVisible == "false" ? "false" : "true" #>;<#= Environment.NewLine #><#
+			}
+
+			if (!string.IsNullOrEmpty(propertyEnabled))
+			{
+				#>			<#= fieldName #>.Enabled = <#= propertyEnabled == "false" ? "false" : "true" #>;<#= Environment.NewLine #><#
+			}
+
+			if (!string.IsNullOrEmpty(propertyIsMandatory))
+			{
+				#>			<#= fieldName #>.IsMandatory = <#= propertyIsMandatory == "true" ? "true" : "false" #>;<#= Environment.NewLine #><#
+			}
+
+			foreach (XmlNode dependencyNode in classNode.SelectNodes("//Dependency"))
+			{
+				if (dependencyNode.ParentNode == propertyNode && (dependencyNode.Attributes["Implement"] == null || dependencyNode.Attributes["Implement"]?.Value == "true"))
+				{
+					var dependencyPropertyName = dependencyNode.Attributes["PropertyName"]?.Value?.ToString();
+					if (!string.IsNullOrEmpty(dependencyPropertyName))
+					{
+						var dependencyFieldName = $"{dependencyPropertyName}Field";
+
+						#>			<#= fieldName #>.<#= dependencyPropertyName #> = <#= dependencyFieldName #>;<#= Environment.NewLine #><#
+					}
+				}
+			}
+		}
+	}
+	
+	#>		}<#= Environment.NewLine #><#
+
+	#>		<#= Environment.NewLine #><#
+
+	#>		public override DataTransferObjects.IDataTransferObject ToDataTransferObject()<#= Environment.NewLine #><#
+	#>		{<#= Environment.NewLine #><#
+	#>			var result = new DataTransferObjects.<#= className #>();<#= Environment.NewLine #><#
+	#>			result.TrackingValueChange = false;<#= Environment.NewLine #><#
+	#>			ToDataTransferObject(result);<#= Environment.NewLine #><#
+	#>			result.TrackingValueChange = true;<#= Environment.NewLine #><#
+	#>			return result;<#= Environment.NewLine #><#
+	#>		}<#= Environment.NewLine #><#
+
+	#>		<#= Environment.NewLine #><#
+
+	#>		public override DataTransferObjects.IDataTransferObject ToDataTransferObject(DataTransferObjects.IDataTransferObject dataTransferObject)<#= Environment.NewLine #><#
+	#>		{<#= Environment.NewLine #><#
+	#>			var result = (DataTransferObjects.<#= className #>)base.ToDataTransferObject(dataTransferObject);<#= Environment.NewLine #><#
+
+				foreach (XmlNode propertyNode in classNode.SelectNodes("//Property"))
+				{
+					if (propertyNode.ParentNode == classNode)
+					{
+						var propertyName = propertyNode.Attributes["Name"].Value.ToString();
+						
+						#>			result.<#= propertyName #> = <#= propertyName #>;<#= Environment.NewLine #><#
+					}
+				}
+
+	#>			return result;<#= Environment.NewLine #><#
+	#>		}<#= Environment.NewLine #><#
+
+	#>	}<#= Environment.NewLine #><#
+}
+
+#>}

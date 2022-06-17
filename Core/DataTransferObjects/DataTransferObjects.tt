@@ -1,0 +1,111 @@
+﻿<#@ template debug="false" hostspecific="true" language="C#" #>
+<#@ output extension=".cs" #>
+<#@ assembly name="System.Xml" #>
+<#@ import namespace="System.Xml" #>
+using System;
+
+/// <summary>
+/// Auto-generated code
+/// </summary>
+namespace CodeGeneration.DataTransferObjects
+{
+<#
+
+XmlDocument doc = new XmlDocument();
+doc.Load(this.Host.ResolvePath("..\\..\\BusinessObjects.xml"));
+
+var first = true;
+foreach (XmlNode classNode in doc.SelectNodes("//Class"))
+{
+	if (first)
+	{
+		first = false;
+	}
+	else
+	{
+		#><#= Environment.NewLine #><#
+	}
+
+	var className = classNode.Attributes["Name"].Value.ToString();
+	var baseClassName = classNode.Attributes["BaseClassName"]?.Value?.ToString() ?? "BaseDataTransferObject";
+	var classCaption = classNode.Attributes["Caption"]?.Value?.ToString();
+	
+	if (!string.IsNullOrEmpty(classCaption))
+	{
+		#>	/// <summary><#= Environment.NewLine #><#
+		#>	/// <#= classCaption #><#= Environment.NewLine #><#
+		#>	/// </summary><#= Environment.NewLine #><#
+	}
+
+	#>	public partial class <#= className #> : <#= baseClassName #>, I<#= classNode.Attributes["Name"].Value #>, IDataTransferObject<#= Environment.NewLine #>	{<#= Environment.NewLine #><#
+
+	foreach (XmlNode propertyNode in classNode.SelectNodes("//Property"))
+	{
+		if (propertyNode.ParentNode == classNode && (propertyNode.Attributes["Implement"] == null || propertyNode.Attributes["Implement"]?.Value == "true"))
+		{
+			var type = propertyNode.Attributes["Type"].Value.ToString();
+			var propertyName = propertyNode.Attributes["Name"].Value.ToString();
+			var propertyCaption = propertyNode.Attributes["Caption"]?.Value?.ToString();
+			var fieldName = $"_{FirstCharacterToLower(propertyName)}";
+
+			#>		private <#= type #> <#= fieldName #>;<#= Environment.NewLine #><#
+
+			if (!string.IsNullOrEmpty(propertyCaption))
+			{
+				#>		/// <summary><#= Environment.NewLine #><#
+				#>		/// <#= propertyCaption #><#= Environment.NewLine #><#
+				#>		/// </summary><#= Environment.NewLine #><#
+			}
+
+			#>		public <#= type #> <#= propertyName #><#= Environment.NewLine #><#
+			#>		{<#= Environment.NewLine #><#
+			#>			get => <#= fieldName #>;<#= Environment.NewLine #><#
+			#>			set => SetValue(nameof(<#= propertyName #>), ref <#= fieldName #>, value);<#= Environment.NewLine #><#
+			#>		}<#= Environment.NewLine #><#
+
+			#><#= Environment.NewLine #><#
+		}
+	}
+
+	#>		public override BusinessObjects.IBusinessObject ToBusinessObject()<#= Environment.NewLine #><#
+	#>		{<#= Environment.NewLine #><#
+	#>			var result = new BusinessObjects.<#= className #>();<#= Environment.NewLine #><#
+	#>			result.TrackingValueChange = false;<#= Environment.NewLine #><#
+	#>			ToBusinessObject(result);<#= Environment.NewLine #><#
+	#>			result.TrackingValueChange = true;<#= Environment.NewLine #><#
+	#>			return result;<#= Environment.NewLine #><#
+	#>		}<#= Environment.NewLine #><#
+
+	#>		<#= Environment.NewLine #><#
+
+	#>		public override BusinessObjects.IBusinessObject ToBusinessObject(BusinessObjects.IBusinessObject businessObject)<#= Environment.NewLine #><#
+	#>		{<#= Environment.NewLine #><#
+	#>			var result = (BusinessObjects.<#= className #>)base.ToBusinessObject(businessObject);<#= Environment.NewLine #><#
+
+				foreach (XmlNode propertyNode in classNode.SelectNodes("//Property"))
+				{
+					if (propertyNode.ParentNode == classNode)
+					{
+						var propertyName = propertyNode.Attributes["Name"].Value.ToString();
+						
+						#>			result.<#= propertyName #> = <#= propertyName #>;<#= Environment.NewLine #><#
+					}
+				}
+
+	#>			return result;<#= Environment.NewLine #><#
+	#>		}<#= Environment.NewLine #><#
+
+	#>	}<#= Environment.NewLine #><#
+}
+
+#>}<#
+
+string FirstCharacterToLower(string text)
+{
+    if (String.IsNullOrEmpty(text) || Char.IsLower(text, 0))
+        return text;
+
+    return Char.ToLowerInvariant(text[0]) + text.Substring(1);
+}
+
+#>

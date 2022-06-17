@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Root>
+	<Class Name="Sum">
+		<Property Name="X" Caption="X" Type="double"/>
+		<Property Name="Y" Caption="Y" Type="double" />
+		<Property Name="Result" Caption="Result" Type="double"/>
+	</Class>
+</Root>
